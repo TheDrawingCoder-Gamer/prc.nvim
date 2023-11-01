@@ -4,7 +4,6 @@ vim.filetype.add({
 	prc = "prc"
 })
 
-local Path = require("plenary.path")
 local _label_location = nil
 local _param_path = "param-xml"
 function M.setup(config)
@@ -50,6 +49,7 @@ vim.api.nvim_create_autocmd({"BufReadPost","FileReadPost"}, {
 			on_exit = function()
 				vim.api.nvim_buf_set_lines(evt.buf, 0, -1, true, {})
 				vim.cmd("1read " .. tmp_file)
+				vim.bo.modified = false
 			end
 		})
 		vim.bo.filetype = "xml"
