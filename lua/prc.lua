@@ -46,6 +46,9 @@ vim.api.nvim_create_autocmd({"BufReadPost","FileReadPost"}, {
 	callback = function(evt)
 		local cmd, tmp_file = get_decomp_cmd(evt.file)
 		vim.fn.jobstart(cmd, {
+			on_stderr = function (job_id, data)
+				print(table.concat(data, "\n"))
+			end,
 			on_exit = function()
 				vim.api.nvim_buf_set_lines(evt.buf, 0, -1, true, {})
 				vim.cmd("1read " .. tmp_file)
@@ -57,16 +60,23 @@ vim.api.nvim_create_autocmd({"BufReadPost","FileReadPost"}, {
 
 	end
 })
-vim.api.nvim_create_autocmd({"BufWritePost", "FileWritePost"}, {
+-- Cmd because I don't want original to do anything
+vim.api.nvim_create_autocmd({"BufWriteCmd", "FileWriteCmd"}, {
 	pattern = "*.prc",
 	group = prcgroup,
 	callback = function(evt)
 		local cmd, tmp_file = get_comp_cmd(evt.file)
+		-- Ignore warning about writing to a file
 		vim.cmd(":w! " .. tmp_file)
 		vim.fn.jobstart(cmd, {
-			on_exit = function ()
+			on_stderr = function (job_id, data)
+				print(table.concat(data, "\n"))
+			end,
+			on_exit = function (job_id, data)
+
 			end
 		})
+		vim.bo.modified = false
 
 	end
 })
